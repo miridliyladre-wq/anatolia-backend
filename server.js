@@ -1,4 +1,4 @@
-require('dotenv').config();
+// require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -11,11 +11,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// Google Vision Client - dosya adını kontrol et
+// Google Vision Client
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: './serious-house-493511-v6-8b41013c59a7.json' // 👈 Gerekiyorsa kendi dosya adınla değiştir
+  keyFilename: './serious-house-493511-v6-8b41013c59a7.json'
 });
 
+// Wikipedia'dan bilgi çekme
 async function getWikipediaInfo(title, lang = 'tr') {
   try {
     const response = await axios.get(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
@@ -31,6 +32,7 @@ async function getWikipediaInfo(title, lang = 'tr') {
   }
 }
 
+// Görüntü analizi endpoint'i
 app.post('/analyze', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Görüntü dosyası gerekli' });
@@ -40,8 +42,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
       image: { content: imageBuffer },
       features: [
         { type: 'LABEL_DETECTION', maxResults: 5 },
-        { type: 'LANDMARK_DETECTION', maxResults: 3 },
-        { type: 'TEXT_DETECTION' }
+        { type: 'LANDMARK_DETECTION', maxResults: 3 }
       ]
     });
 
@@ -57,8 +58,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
     res.json({
       detectedName,
       confidence: result.landmarkAnnotations?.[0]?.score || result.labelAnnotations?.[0]?.score || 0,
-      wikipedia: wikiData,
-      ocrText: result.textAnnotations?.[0]?.description || null
+      wikipedia: wikiData
     });
   } catch (error) {
     console.error('Hata:', error);
@@ -69,4 +69,4 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Backend ${PORT} portunda çalışıyor`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Backend ${PORT} portunda çalışıyor`));
