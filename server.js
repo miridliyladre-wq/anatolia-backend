@@ -11,9 +11,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// Google Vision Client
+// Google Vision Client - Environment variable ile kimlik doğrulama
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: './serious-house-493511-v6-8b41013c59a7.json'
+  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
 });
 
 // Wikipedia'dan bilgi çekme
